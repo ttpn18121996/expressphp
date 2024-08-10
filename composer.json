@@ -1,0 +1,22 @@
+{
+    "name": "ttpn18121996/expressphp",
+    "type": "framework",
+    "require": {
+        "php": "^8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Expressphp\\": "src/"
+        },
+        "files": [
+            "src/Support/helper.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Trinh Tran Phuong Nam",
+            "email": "ttpn18121996@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
