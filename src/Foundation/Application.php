@@ -9,9 +9,13 @@ class Application
 {
     public static Application $instance;
 
+    public Router $router;
+
     public function __construct(
         protected Container $container,
-    ) {}
+    ) {
+        $this->router = $container->make(Router::class);
+    }
 
     public static function getInstance(): static
     {
@@ -34,8 +38,16 @@ class Application
         return $this;
     }
 
+    public function use(string $key, $value)
+    {
+        if ($value instanceof Router) {
+            $this->router->prefix($key)->group($value);
+        }
+    }
+
     public function run()
     {
+        // $this->router->route
         $this->container->action([Route::getFacadeRoot(), 'run']);
     }
 }

@@ -40,11 +40,7 @@ class Route
      */
     public function configRoute(RouteGroup $routeGroup): void
     {
-        $this->prefix = $routeGroup->prefix ?? '';
-
-        if (! empty($routeGroup->namespace)) {
-            $this->namespace($routeGroup->namespace);
-        }
+        $this->prefix = ($routeGroup->prefix ?? '').$this->prefix;
 
         if (isset($routeGroup->as)) {
             $this->name = $routeGroup->as.$this->name;
@@ -122,7 +118,7 @@ class Route
      */
     public function getUri(): string
     {
-        $uri = trim($this->prefix, '/').'/'.$this->getBaseUri();
+        $uri = trim($this->prefix ?? '', '/').'/'.$this->getBaseUri();
 
         return $uri == '/' ? '/' : trim($uri, '/') ;
     }

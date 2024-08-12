@@ -5,7 +5,6 @@ namespace Expressphp\Routing;
 use Closure;
 use Expressphp\Http\Request;
 use Expressphp\Http\Response;
-use ReflectionFunction;
 
 class Router
 {
@@ -21,12 +20,49 @@ class Router
 
     /**
      * Danh sách các group đã đăng ký.
+     *
+     * @var \Expressphp\Routing\RouteGroup[]
      */
     protected array $groupStack = [];
 
     public function get(string $uri, Closure $callback): Route
     {
         return $this->addRoute(['GET'], $uri, $callback);
+    }
+    
+    public function post(string $uri, Closure $callback): Route
+    {
+        return $this->addRoute(['POST'], $uri, $callback);
+    }
+    
+    public function put(string $uri, Closure $callback): Route
+    {
+        return $this->addRoute(['PUT'], $uri, $callback);
+    }
+    
+    public function patch(string $uri, Closure $callback): Route
+    {
+        return $this->addRoute(['PATCH'], $uri, $callback);
+    }
+    
+    public function delete(string $uri, Closure $callback): Route
+    {
+        return $this->addRoute(['DELETE'], $uri, $callback);
+    }
+    
+    public function options(string $uri, Closure $callback): Route
+    {
+        return $this->addRoute(['OPTIONS'], $uri, $callback);
+    }
+
+    public function all(string $uri, Closure $callback): Route
+    {
+        return $this->addRoute($this->verbs, $uri, $callback);
+    }
+    
+    public function match(array $methods, string $uri, Closure $callback): Route
+    {
+        return $this->addRoute($methods, $uri, $callback);
     }
 
     public function addRoute(array $methods, string $uri, Closure $callback)
@@ -35,14 +71,38 @@ class Router
 
         if (count($this->groupStack)) {
             $routeGroupOptions = end($this->groupStack);
-            $route->configRoute($routeGroupOptions);
+
+            if ($routeGroupOptions) {
+                $route->configRoute($routeGroupOptions);
+            }
         }
         
         foreach ($methods as $method) {
-            $this->routes[$method][] = $route;
+            $this->routes[strtoupper($method)][] = $route;
         }
 
         return $route;
+    }
+
+    public function group(array $options, Closure $callback): void
+    {
+        $this->updateGroupStack($options);
+
+        $callback($this);
+
+        array_pop($this->groupStack);
+    }
+
+    public function updateGroupStack(array $options): void
+    {
+        $routeGroup = new RouteGroup($options);
+
+        if (empty($this->groupStack)) {
+            $this->groupStack[] = $routeGroup;
+        } else {
+            $lastGroupStack = end($this->groupStack);
+            $this->groupStack[] = $routeGroup->merge($lastGroupStack->toArray(), $options);
+        }
     }
 
     public function run(Request $request)
@@ -64,21 +124,12 @@ class Router
     /**
      * Thực thi closure.
      */
-    private function executeRouteCallback(\Closure|callable $callback, array $args): void
+    public function mergeRouter(array|Router $router)
     {
-        $reflection = new ReflectionFunction($callback);
-        $newParameters = [];
-
-        foreach ($reflection->getParameters() as $parameter) {
-            if (! is_null($parameter->getType())) {
-                $newParameters[] = app($parameter->getType()->getName());
-            } elseif (isset($args[$parameter->name])) {
-                $newParameters[] = $args[$parameter->name];
-            }
+        if ($router instanceof Router) {
+            $router = $router->routes;
         }
 
-        $parameters = $newParameters;
-
-        app(Response::class, ['data' => call_user_func_array($callback, $parameters)])->send();
+        //
     }
 }
