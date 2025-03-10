@@ -3,6 +3,8 @@
 namespace Expressphp\Routing;
 
 use Closure;
+use Expressphp\Http\Request;
+use Expressphp\Http\Response;
 use ReflectionFunction;
 
 class Route
@@ -27,12 +29,21 @@ class Route
      */
     public array $params = [];
 
+    public Request $request;
+
+    public Response $response;
+
+    public array $callbacks;
+
     public function __construct(
         public array $methods,
         public string $uri,
-        public Closure $callback,
+        array $callbacks,
     ) {
         $this->uri = $uri != '/' ? trim($uri, '/') : '/';
+        $this->callbacks = $callbacks;
+        $this->request = new Request();
+        $this->response = new Response($this->request);
     }
 
     /**
@@ -101,6 +112,7 @@ class Route
         foreach ($matches as $key => $value) {
             if (! is_integer($key)) {
                 $this->params[$key] = $value;
+                $this->request->setParam($key, $value);
             }
         }
     }

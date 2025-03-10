@@ -151,7 +151,6 @@ class Response
 
     public function __construct(
         public Request $request,
-        public $data = null,
         public int $status = 200,
     ) {}
 

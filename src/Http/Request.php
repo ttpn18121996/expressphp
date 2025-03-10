@@ -14,11 +14,11 @@ class Request
 
     protected array $data;
 
+    protected array $params = [];
+
     protected array $query;
 
     protected array $files;
-
-    protected Route $route;
 
     public function __construct()
     {
@@ -125,5 +125,19 @@ class Request
     public function method(): string
     {
         return $this->method;
+    }
+
+    public function setParams(array $params)
+    {
+        $this->params = array_merge($this->params, $params);
+
+        return $this;
+    }
+
+    public function setParam(string $key, $value)
+    {
+        $this->params[$key] = $value;
+
+        return $this;
     }
 }

@@ -65,7 +65,7 @@ class Router
         return $this->addRoute($methods, $uri, $callback);
     }
 
-    public function addRoute(array $methods, string $uri, Closure $callback)
+    public function addRoute(array $methods, string $uri, ...$callback)
     {
         $route = new Route($methods, $uri, $callback);
 
@@ -113,7 +113,10 @@ class Router
         if (in_array($httpRequestMethod, $this->verbs) && isset($this->routes[$httpRequestMethod])) {
             foreach ($this->routes[$httpRequestMethod] as $route) {
                 if ($route->compare($uri)) {
-                    return app()->call($route->callback, $route->params);
+                    return app()->call($route->callback, [
+                        'request' => $route->request,
+                        'response' => $route->response,
+                    ]);
                 }
             }
         }
